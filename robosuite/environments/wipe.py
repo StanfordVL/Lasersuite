@@ -181,6 +181,9 @@ class Wipe(RobotEnv):
         camera_widths=256,
         camera_depths=False,
         task_config=None,
+        bounds_sel=None,
+        n_split_x=1,
+        n_split_y=1,
     ):
         # First, verify that only one robot is being inputted
         self._check_robot_configuration(robots)
@@ -252,6 +255,10 @@ class Wipe(RobotEnv):
         self.metadata = []
         self.spec = "spec"
 
+        self.bounds_sel = bounds_sel
+        self.n_split_x = n_split_x
+        self.n_split_y = n_split_y
+
         # whether to include and use ground-truth object states
         self.use_object_obs = use_object_obs
 
@@ -287,6 +294,13 @@ class Wipe(RobotEnv):
             camera_widths=camera_widths,
             camera_depths=camera_depths,
         )
+
+    def set_task(self, task_idx):
+        self.bounds_sel = task_idx
+        self.mujoco_arena.bounds_sel = task_idx
+
+    def n_tasks(self):
+        return self.n_split_x * self.n_split_y
 
     def reward(self, action):
         """
@@ -515,7 +529,10 @@ class Wipe(RobotEnv):
             coverage_factor=self.coverage_factor,
             num_sensors=self.num_sensors,
             line_width=self.line_width,
-            two_clusters=self.two_clusters
+            two_clusters=self.two_clusters,
+            bounds_sel=self.bounds_sel,
+            n_split_x=self.n_split_x,
+            n_split_y=self.n_split_y
         )
         if self.use_indicator_object:
             self.mujoco_arena.add_pos_indicator()

@@ -29,7 +29,10 @@ class WipeArena(TableArena):
         num_sensors=10,
         table_friction_std=0,
         line_width=0.02,
-        two_clusters=False
+        two_clusters=False,
+        bounds_sel=None,
+        n_split_x=1,
+        n_split_y=1,
     ):
         # Tactile table-specific features
         self.table_friction_std = table_friction_std
@@ -42,6 +45,12 @@ class WipeArena(TableArena):
 
         # Attribute to hold current direction of sampled dirt path
         self.direction = None
+
+        self.bounds_sel = bounds_sel
+        self.n_split_x = n_split_x
+        self.n_split_y = n_split_y
+        self.x_line_bounds = None
+        self.y_line_bounds = None
 
         # run superclass init
         super().__init__(
@@ -148,16 +157,42 @@ class WipeArena(TableArena):
         # First define the random direction that we will start at
         self.direction = np.random.uniform(-np.pi, np.pi)
 
-        return np.array(
-            (
-                np.random.uniform(
-                    -self.table_half_size[0] * self.coverage_factor + self.line_width / 2,
-                    self.table_half_size[0] * self.coverage_factor - self.line_width / 2),
-                np.random.uniform(
-                    -self.table_half_size[1] * self.coverage_factor + self.line_width / 2,
-                    self.table_half_size[1] * self.coverage_factor - self.line_width / 2)
+        if self.x_line_bounds is None or self.y_line_bounds is None:
+            self.x_line_bounds = np.linspace(
+                -self.table_half_size[0]*self.coverage_factor+self.line_width/2,
+                self.table_half_size[0]*self.coverage_factor-self.line_width / 2,
+                self.n_split_x+1
             )
-        )
+            self.y_line_bounds = np.linspace(
+                -self.table_half_size[1]*self.coverage_factor+self.line_width/2,
+                self.table_half_size[1]*self.coverage_factor-self.line_width / 2,
+                self.n_split_y+1
+            )
+
+        if self.bounds_sel is not None:
+            x_i = self.bounds_sel % self.n_split_y
+            y_i = (self.bounds_sel - x_i)/self.n_split_x
+            return np.array(
+                (
+                    np.random.uniform(
+                        self.x_line_bounds[x_i],
+                        self.x_line_bounds[x_i+1]),
+                    np.random.uniform(
+                        self.y_line_bounds[y_i],
+                        self.y_line_bounds[y_i+1])
+                )
+            )
+        else:
+            return np.array(
+                (
+                    np.random.uniform(
+                        -self.table_half_size[0] * self.coverage_factor + self.line_width / 2,
+                        self.table_half_size[0] * self.coverage_factor - self.line_width / 2),
+                    np.random.uniform(
+                        -self.table_half_size[1] * self.coverage_factor + self.line_width / 2,
+                        self.table_half_size[1] * self.coverage_factor - self.line_width / 2)
+                )
+            )
 
     def sample_path_pos(self, pos):
         """
