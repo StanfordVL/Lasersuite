@@ -170,18 +170,11 @@ class WipeArena(TableArena):
             )
 
         if self.bounds_sel is not None:
-            x_i = self.bounds_sel % self.n_split_y
-            y_i = (self.bounds_sel - x_i)/self.n_split_x
-            assert abs(y_i - int(y_i)) < 1e-10
-            y_i = int(y_i)
+            x_bounds, y_bounds = self.compute_bounds(self.bounds_sel)
             return np.array(
                 (
-                    np.random.uniform(
-                        self.x_line_bounds[x_i],
-                        self.x_line_bounds[x_i+1]),
-                    np.random.uniform(
-                        self.y_line_bounds[y_i],
-                        self.y_line_bounds[y_i+1])
+                    np.random.uniform(*x_bounds),
+                    np.random.uniform(*y_bounds)
                 )
             )
         else:
@@ -195,6 +188,15 @@ class WipeArena(TableArena):
                         self.table_half_size[1] * self.coverage_factor - self.line_width / 2)
                 )
             )
+
+    def compute_bounds(self, bounds_sel):
+        x_i = bounds_sel % self.n_split_y
+        y_i = (bounds_sel - x_i) / self.n_split_x
+        assert abs(y_i - int(y_i)) < 1e-10
+        y_i = int(y_i)
+        x_bounds = (self.x_line_bounds[x_i], self.x_line_bounds[x_i + 1])
+        y_bounds = (self.y_line_bounds[y_i], self.y_line_bounds[y_i + 1])
+        return x_bounds, y_bounds
 
     def sample_path_pos(self, pos):
         """
