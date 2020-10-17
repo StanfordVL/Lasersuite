@@ -143,6 +143,11 @@ class Door(RobotEnv):
         camera_heights=256,
         camera_widths=256,
         camera_depths=False,
+        bounds_sel=None,
+        n_split_x=1,
+        n_split_y=1,
+        door_bounds_meta_x=(-0.3, 0.3),
+        door_bounds_meta_y=(-0.2, 0.2),
     ):
         # First, verify that only one robot is being inputted
         self._check_robot_configuration(robots)
@@ -159,6 +164,22 @@ class Door(RobotEnv):
         # whether to use ground-truth object states
         self.use_object_obs = use_object_obs
 
+        self.bounds_sel = bounds_sel
+        self.n_split_x = n_split_x
+        self.n_split_y = n_split_y
+        self.door_bounds_meta_x = door_bounds_meta_x
+        self.door_bounds_meta_y = door_bounds_meta_y
+        self.x_line_bounds = np.linspace(
+            self.door_bounds_meta_x[0],
+            self.door_bounds_meta_x[1],
+            self.n_split_x + 1
+        )
+        self.y_line_bounds = np.linspace(
+            self.door_bounds_meta_y[0],
+            self.door_bounds_meta_y[1],
+            self.n_split_y + 1
+        )
+
         # object placement initializer
         if placement_initializer:
             self.placement_initializer = placement_initializer
@@ -170,6 +191,7 @@ class Door(RobotEnv):
                 rotation=(-np.pi / 2. - 0.25, -np.pi / 2.),
                 rotation_axis='z',
             )
+        self.default_placement_initializer = self.placement_initializer
 
         super().__init__(
             robots=robots,
@@ -193,6 +215,33 @@ class Door(RobotEnv):
             camera_widths=camera_widths,
             camera_depths=camera_depths,
         )
+
+    def set_task(self, task_idx):
+        self.bounds_sel = task_idx
+        if task_idx is None:
+            self.placement_initializer = self.default_placement_initializer
+        else:
+            x_bounds, y_bounds = self.compute_bounds(self.bounds_sel)
+            self.placement_initializer = UniformRandomSampler(
+                x_range=x_bounds,
+                y_range=y_bounds,
+                ensure_object_boundary_in_range=False,
+                rotation=(-np.pi / 2. - 0.25, -np.pi / 2.),
+                rotation_axis='z',
+            )
+        self.mujoco_arena.initializer = self.placement_initializer
+
+    def n_tasks(self):
+        return self.n_split_x * self.n_split_y
+
+    def compute_bounds(self, bounds_sel):
+        x_i = bounds_sel % self.n_split_y
+        y_i = (bounds_sel - x_i) / self.n_split_x
+        assert abs(y_i - int(y_i)) < 1e-10
+        y_i = int(y_i)
+        x_bounds = (self.x_line_bounds[x_i], self.x_line_bounds[x_i + 1])
+        y_bounds = (self.y_line_bounds[y_i], self.y_line_bounds[y_i + 1])
+        return x_bounds, y_bounds
 
     def reward(self, action=None):
         """
