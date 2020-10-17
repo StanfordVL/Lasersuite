@@ -172,6 +172,8 @@ class WipeArena(TableArena):
         if self.bounds_sel is not None:
             x_i = self.bounds_sel % self.n_split_y
             y_i = (self.bounds_sel - x_i)/self.n_split_x
+            assert abs(y_i - int(y_i)) < 1e-10
+            y_i = int(y_i)
             return np.array(
                 (
                     np.random.uniform(
