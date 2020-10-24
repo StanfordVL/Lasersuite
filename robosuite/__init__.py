@@ -5,6 +5,7 @@ from robosuite.environments.stack import Stack
 from robosuite.environments.nut_assembly import NutAssembly
 from robosuite.environments.pick_place import PickPlace
 from robosuite.environments.door import Door
+from robosuite.environments.door_open import DoorOpen
 from robosuite.environments.wipe import Wipe
 from robosuite.environments.two_arm_lift import TwoArmLift
 from robosuite.environments.two_arm_peg_in_hole import TwoArmPegInHole
