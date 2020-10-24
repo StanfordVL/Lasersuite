@@ -148,7 +148,7 @@ class Door(RobotEnv):
         n_split_y=1,
         door_bounds_meta_x=(-0.3, 0.3),
         door_bounds_meta_y=(-0.2, 0.2),
-        door_bounds_coverage_fraction=0.1,
+        bounds_cov_frac=0.2,
     ):
         # First, verify that only one robot is being inputted
         self._check_robot_configuration(robots)
@@ -180,6 +180,7 @@ class Door(RobotEnv):
             self.door_bounds_meta_y[1],
             self.n_split_y + 1
         )
+        self.bounds_cov_frac = bounds_cov_frac
 
         # object placement initializer
         if placement_initializer:
@@ -242,8 +243,10 @@ class Door(RobotEnv):
         y_i = (bounds_sel - x_i) / self.n_split_x
         assert abs(y_i - int(y_i)) < 1e-10
         y_i = int(y_i)
-        x_bounds = (self.x_line_bounds[x_i], self.x_line_bounds[x_i + 1])
-        y_bounds = (self.y_line_bounds[y_i], self.y_line_bounds[y_i + 1])
+        delta_x = self.x_line_bounds[x_i + 1] - self.x_line_bounds[x_i]
+        delta_y = self.y_line_bounds[y_i + 1] - self.y_line_bounds[y_i]
+        x_bounds = (self.x_line_bounds[x_i]+delta_x*self.bounds_cov_frac/2, self.x_line_bounds[x_i + 1]-delta_x*self.bounds_cov_frac/2)
+        y_bounds = (self.y_line_bounds[y_i]+delta_y*self.bounds_cov_frac/2, self.y_line_bounds[y_i + 1]-delta_y*self.bounds_cov_frac/2)
         return x_bounds, y_bounds
 
     def reward(self, action=None):
