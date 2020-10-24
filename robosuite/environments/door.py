@@ -148,6 +148,7 @@ class Door(RobotEnv):
         n_split_y=1,
         door_bounds_meta_x=(-0.3, 0.3),
         door_bounds_meta_y=(-0.2, 0.2),
+        door_bounds_coverage_fraction=0.1,
     ):
         # First, verify that only one robot is being inputted
         self._check_robot_configuration(robots)
@@ -284,46 +285,13 @@ class Door(RobotEnv):
         elif self.reward_shaping and (self._check_arm_contact() or self._check_q_limits()):
             reward += self.arm_collision_penalty
         elif self.reward_shaping:
-
-            pg = self.robots[0].gripper.naming_prefix
-
-            force_sensor_id = self.sim.model.sensor_name2id(pg + "force_ee")
-            ee_force = self.sim.data.sensordata[force_sensor_id * 3: force_sensor_id * 3 + 3]
-            total_force_ee = np.linalg.norm(np.array(ee_force))
-
-            torque_sensor_id = self.sim.model.sensor_name2id(pg + "torque_ee")
-            torque_ee = self.sim.data.sensordata[torque_sensor_id * 3: torque_sensor_id * 3 + 3]
-            total_torque_ee = np.linalg.norm(np.array(torque_ee))
-
-            if self.handle_reward:
-                dist = np.linalg.norm(self.eef_pos[0:2] - self.handle_pos[0:2])
-                if dist < self.dist_threshold and abs(self.eef_pos[2] - self.handle_pos[2]) < 0.02:
-                    self.touched_handle = 1
-                    reward += self.handle_reward
-                else:
-                    # if robot starts 0.3 away and dist_threshold is 0.05: [0.005, 0.55] without scaling
-                    reward += (self.handle_shaped_reward * (1 - np.tanh(3 * dist))).squeeze()
-                    self.touched_handle = 0
-
-
-            # penalize excess force
-            if total_force_ee > self.pressure_threshold_max:
-                reward -= self.excess_force_penalty_mul * total_force_ee
-            # penalize excess torque
-            if total_torque_ee > self.torque_threshold_max:
-                reward -= self.excess_torque_penalty_mul * total_torque_ee
-
-            # award bonus either for making process toward opening door
-            # hinge_diff = abs(self.hinge_goal - self.hinge_qpos)
-            # reward += (self.door_shaped_reward * (np.abs(self.hinge_goal) - hinge_diff)).squeeze()
-
             # reward for opening the door
             reward += self.door_shaped_reward * (np.clip(self.hinge_qpos - self.hinge_goal, -self.hinge_goal, 0)+self.hinge_goal).squeeze()
 
             # Add reaching component
-            # dist = np.linalg.norm(self._gripper_to_handle)
-            # reaching_reward = 0.25 * (1 - np.tanh(10.0 * dist))
-            # reward += reaching_reward
+            dist = np.linalg.norm(self._gripper_to_handle)
+            reaching_reward = 0.25 * (1 - np.tanh(10.0 * dist))
+            reward += reaching_reward
 
             # Add rotating component if we're using a locked door
             if self.use_latch:
@@ -341,20 +309,7 @@ class Door(RobotEnv):
         Loads an xml model, puts it in self.model
         """
 
-        self.dist_threshold = 0.01
-        self.excess_force_penalty_mul = 0.05
-        self.excess_torque_penalty_mul = 0.5
-        self.torque_threshold_max = 100 * 0.1
-        self.pressure_threshold_max = 100
-        self.handle_reward = True
-
-        self.handle_final_reward = 1
-        self.handle_shaped_reward = 0.5
-        self.max_hinge_diff = 0.05
-        self.max_hinge_vel = 0.1
-        self.final_reward = 10
         self.door_shaped_reward = 15
-        self.velocity_penalty = 1
         self.arm_collision_penalty = -1
 
         super()._load_model()
