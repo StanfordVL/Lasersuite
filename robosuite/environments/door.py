@@ -193,6 +193,8 @@ class Door(RobotEnv):
             )
         self.default_placement_initializer = self.placement_initializer
 
+        self.hinge_goal = 0.3
+
         super().__init__(
             robots=robots,
             controller_configs=controller_configs,
@@ -273,14 +275,56 @@ class Door(RobotEnv):
 
         # sparse completion reward
         if self._check_success():
-            reward = 1.0
-
-        # else, we consider only the case if we're using shaped rewards
+            # reward = 1.0
+            if self.reward_shaping:
+                reward = self.door_shaped_reward
+            else:
+                reward = 1.0
+        # Neg Reward from collisions of the arm with the table
+        elif self.reward_shaping and (self._check_arm_contact() or self._check_q_limits()):
+            reward += self.arm_collision_penalty
         elif self.reward_shaping:
+
+            pg = self.robots[0].gripper.naming_prefix
+
+            force_sensor_id = self.sim.model.sensor_name2id(pg + "force_ee")
+            ee_force = self.sim.data.sensordata[force_sensor_id * 3: force_sensor_id * 3 + 3]
+            total_force_ee = np.linalg.norm(np.array(ee_force))
+
+            torque_sensor_id = self.sim.model.sensor_name2id(pg + "torque_ee")
+            torque_ee = self.sim.data.sensordata[torque_sensor_id * 3: torque_sensor_id * 3 + 3]
+            total_torque_ee = np.linalg.norm(np.array(torque_ee))
+
+            if self.handle_reward:
+                dist = np.linalg.norm(self.eef_pos[0:2] - self.handle_pos[0:2])
+                if dist < self.dist_threshold and abs(self.eef_pos[2] - self.handle_pos[2]) < 0.02:
+                    self.touched_handle = 1
+                    reward += self.handle_reward
+                else:
+                    # if robot starts 0.3 away and dist_threshold is 0.05: [0.005, 0.55] without scaling
+                    reward += (self.handle_shaped_reward * (1 - np.tanh(3 * dist))).squeeze()
+                    self.touched_handle = 0
+
+
+            # penalize excess force
+            if total_force_ee > self.pressure_threshold_max:
+                reward -= self.excess_force_penalty_mul * total_force_ee
+            # penalize excess torque
+            if total_torque_ee > self.torque_threshold_max:
+                reward -= self.excess_torque_penalty_mul * total_torque_ee
+
+            # award bonus either for making process toward opening door
+            # hinge_diff = abs(self.hinge_goal - self.hinge_qpos)
+            # reward += (self.door_shaped_reward * (np.abs(self.hinge_goal) - hinge_diff)).squeeze()
+
+            # reward for opening the door
+            reward += self.door_shaped_reward * (np.clip(self.hinge_qpos - self.hinge_goal, -self.hinge_goal, 0)+self.hinge_goal).squeeze()
+
             # Add reaching component
-            dist = np.linalg.norm(self._gripper_to_handle)
-            reaching_reward = 0.25 * (1 - np.tanh(10.0 * dist))
-            reward += reaching_reward
+            # dist = np.linalg.norm(self._gripper_to_handle)
+            # reaching_reward = 0.25 * (1 - np.tanh(10.0 * dist))
+            # reward += reaching_reward
+
             # Add rotating component if we're using a locked door
             if self.use_latch:
                 handle_qpos = self.sim.data.qpos[self.handle_qpos_addr]
@@ -296,6 +340,23 @@ class Door(RobotEnv):
         """
         Loads an xml model, puts it in self.model
         """
+
+        self.dist_threshold = 0.01
+        self.excess_force_penalty_mul = 0.05
+        self.excess_torque_penalty_mul = 0.5
+        self.torque_threshold_max = 100 * 0.1
+        self.pressure_threshold_max = 100
+        self.handle_reward = True
+
+        self.handle_final_reward = 1
+        self.handle_shaped_reward = 0.5
+        self.max_hinge_diff = 0.05
+        self.max_hinge_vel = 0.1
+        self.final_reward = 10
+        self.door_shaped_reward = 15
+        self.velocity_penalty = 1
+        self.arm_collision_penalty = -1
+
         super()._load_model()
 
         # Verify the correct robot has been loaded
@@ -338,6 +399,19 @@ class Door(RobotEnv):
         )
         self.model.place_objects()
 
+    def _check_arm_contact(self):
+        """
+        Returns True if the arm is in contact with another object.
+        """
+        collision = False
+        for contact in self.sim.data.contact[:self.sim.data.ncon]:
+            if self.sim.model.geom_id2name(contact.geom1) in self.robots[
+                0].robot_model.contact_geoms or self.sim.model.geom_id2name(contact.geom2) in self.robots[
+                0].robot_model.contact_geoms:
+                collision = True
+                break
+        return collision
+
     def _get_reference(self):
         """
         Sets up references to important components. A reference is typically an
@@ -353,6 +427,7 @@ class Door(RobotEnv):
         self.object_body_ids["latch"] = self.sim.model.body_name2id("latch")
         self.door_handle_site_id = self.sim.model.site_name2id("door_handle")
         self.hinge_qpos_addr = self.sim.model.get_joint_qpos_addr("door_hinge")
+        self.hinge_qvel_addr = self.sim.model.get_joint_qvel_addr("door_hinge")
         if self.use_latch:
             self.handle_qpos_addr = self.sim.model.get_joint_qpos_addr("latch_joint")
 
@@ -403,16 +478,16 @@ class Door(RobotEnv):
             # Get robot prefix
             pr = self.robots[0].robot_model.naming_prefix
 
-            eef_pos = self._eef_xpos
+            self.eef_pos = self._eef_xpos
             door_pos = np.array(self.sim.data.body_xpos[self.object_body_ids["door"]])
-            handle_pos = self._handle_xpos
-            hinge_qpos = np.array([self.sim.data.qpos[self.hinge_qpos_addr]])
+            self.handle_pos = self._handle_xpos
+            self.hinge_qpos = np.array([self.sim.data.qpos[self.hinge_qpos_addr]])
 
             di["door_pos"] = door_pos
-            di["handle_pos"] = handle_pos
-            di[pr + "door_to_eef_pos"] = door_pos - eef_pos
-            di[pr + "handle_to_eef_pos"] = handle_pos - eef_pos
-            di["hinge_qpos"] = hinge_qpos
+            di["handle_pos"] = self.handle_pos
+            di[pr + "door_to_eef_pos"] = door_pos - self.eef_pos
+            di[pr + "handle_to_eef_pos"] = self.handle_pos - self.eef_pos
+            di["hinge_qpos"] = self.hinge_qpos
         
             di['object-state'] = np.concatenate([
                 di["door_pos"],
@@ -438,7 +513,7 @@ class Door(RobotEnv):
             bool: True if door has been opened
         """
         hinge_qpos = self.sim.data.qpos[self.hinge_qpos_addr]
-        return hinge_qpos > 0.3
+        return hinge_qpos > self.hinge_goal
 
     def _visualization(self):
         """
