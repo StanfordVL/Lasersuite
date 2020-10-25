@@ -184,7 +184,7 @@ class DoorOpen(RobotEnv):
 
 		Important keys:
 			robot-state: contains robot-centric information.
-			task_state: requires @self.use_object_obs to be True.
+			object-state: requires @self.use_object_obs to be True.
 				contains object-centric information.
 			image: requires @self.use_camera_obs to be True.
 				contains a rendered frame from the simulation.
@@ -209,7 +209,7 @@ class DoorOpen(RobotEnv):
 			if self.use_door_state:
 				di['task_state'] = np.concatenate([di['task_state'], self.hinge_qpos, self.hinge_qvel])
 			di["target_pos"] = [0, 0, 0]
-			di["task_state"] = np.concatenate([di["task_state"], di["robot0_eef_pos"]])
+			di["object-state"] = np.concatenate([di["task_state"], di["robot0_eef_pos"]])
 		return di
 
 	def _check_gripper_contact(self):
@@ -357,8 +357,8 @@ class DoorOpen(RobotEnv):
 		if type(robots) is list:
 			assert len(robots) == 1, "Error: Only one robot should be inputted for this task!"
 
+	'''
 	def get_viewer(self, mode):
-		self.viewer = self.viewers.get(mode)
 		if self.viewer is None:
 			self.viewer = mujoco_py.MjViewer(self.sim) if mode in ["human"] else mujoco_py.MjRenderContextOffscreen(
 				self.sim, -1) if mode in ["rgb_array", "depth_array"] else None
@@ -370,5 +370,5 @@ class DoorOpen(RobotEnv):
 			self.viewer.cam.azimuth = 270
 			self.viewer.cam.elevation = -90
 			self.viewer.cam.distance = 1
-			self.viewers[mode] = self.viewer
 		return self.viewer
+	'''

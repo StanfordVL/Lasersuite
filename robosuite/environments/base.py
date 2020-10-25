@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import mujoco_py
 from mujoco_py import MjSim, MjRenderContextOffscreen
 from mujoco_py import load_model_from_xml
 
@@ -6,6 +7,7 @@ from robosuite.utils import SimulationError, XMLError, MujocoPyRenderer
 
 REGISTERED_ENVS = {}
 
+DEFAULT_SIZE = 500
 
 def register_env(target_class):
     REGISTERED_ENVS[target_class.__name__] = target_class
@@ -330,11 +332,24 @@ class MujocoEnv(metaclass=EnvMeta):
         """
         raise NotImplementedError
 
-    def render(self):
+    def render(self, mode='human', width=DEFAULT_SIZE, height=DEFAULT_SIZE, camera_name=None):
+        if mode == 'rgb_array':
+            camera_id = self.model.camera_name2id(camera_name) if camera_name in self.model._camera_name2id else None
+            self.get_viewer(mode).render(width, height, camera_id=camera_id)
+            data = self.get_viewer(mode).read_pixels(width, height, depth=False)
+            return data[::-1, :, :]
+        elif mode == 'depth_array':
+            self.get_viewer(mode).render(width, height)
+            data = self.get_viewer(mode).read_pixels(width, height, depth=True)[1]
+            return data[::-1, :]
+        elif mode == 'human':
+            self.get_viewer(mode).render()
+
+    #def render(self):
         """
         Renders to an on-screen window.
         """
-        self.viewer.render()
+    #    self.viewer.render()
 
     def observation_spec(self):
         """
@@ -422,6 +437,20 @@ class MujocoEnv(metaclass=EnvMeta):
             bool: True if the task has been completed
         """
         raise NotImplementedError
+
+    def get_viewer(self, mode):
+        if self.viewer is None:
+            self.viewer = mujoco_py.MjViewer(self.sim) if mode in ["human"] else mujoco_py.MjRenderContextOffscreen(
+                self.sim, -1) if mode in ["rgb_array", "depth_array"] else None
+            self.viewer.vopt.geomgroup[0] = (1 if self.render_collision_mesh else 0)
+            self.viewer.vopt.geomgroup[1] = (1 if self.render_visual_mesh else 0)
+            self.viewer._hide_overlay = True
+            self.viewer._render_every_frame = True
+            self.viewer.cam.trackbodyid = 0
+            self.viewer.cam.azimuth = 270
+            self.viewer.cam.elevation = -90
+            self.viewer.cam.distance = 1
+        return self.viewer
 
     def _destroy_viewer(self):
         """
