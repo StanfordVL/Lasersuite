@@ -22,15 +22,15 @@ DEFAULT_WIPE_CONFIG = {
 
     # settings for table top
     "table_full_size": [0.6, 0.8, 0.05],            # Size of tabletop
-    "table_offset": [0, 0, 0.8],                    # Offset of table (z dimension defines max height of table)
+    "table_offset": [0, 0, 1.05],                    # Offset of table (z dimension defines max height of table)
     "table_friction": [0.00001, 0.005, 0.0001],     # Friction parameters for the table
     "table_friction_std": 0,                        # Standard deviation to sample different friction parameters for the table each episode
     "table_height": 0.0,                            # Additional height of the table over the default location
     "table_height_std": 0.0,                        # Standard deviation to sample different heigths of the table each episode
     "line_width": 0.04,                             # Width of the line to wipe (diameter of the pegs)
-    "two_clusters": False,                          # if the dirt to wipe is one continuous line or two
+    "two_clusters": True,                           # if the dirt to wipe is one continuous line or two
     "coverage_factor": 0.6,                         # how much of the table surface we cover
-    "num_sensors": 50,                              # How many particles of dirt to generate in the environment
+    "num_sensors": 2,                               # How many particles of dirt to generate in the environment
 
     # settings for thresholds
     "contact_threshold": 3,                         # Minimum eef force to qualify as contact [N]
@@ -384,6 +384,14 @@ class Wipe(RobotEnv):
             # Normal of the plane defined by v1 and v2
             n = np.cross(v1, v2)
             n /= np.linalg.norm(n)
+
+            # Penalize not being on the table
+            wiper_pos = (corner1_pos + corner2_pos + corner3_pos + corner4_pos) / 4
+            print(wiper_pos[2])
+            if wiper_pos[2] > 1.05:
+                reward -= 10.0 * (wiper_pos[2] - 1.05)
+            else:
+                reward += 0.1
 
             def isLeft(P0, P1, P2):
                 return ((P1[0] - P0[0]) * (P2[1] - P0[1]) - (P2[0] - P0[0]) * (P1[1] - P0[1]))
