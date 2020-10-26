@@ -13,7 +13,7 @@ import multiprocessing
 DEFAULT_WIPE_CONFIG = {
     # settings for reward
     "arm_limit_collision_penalty": -10.0,           # penalty for reaching joint limit or arm collision (except the wiping tool) with the table
-    "wipe_contact_reward": 0.01,                    # reward for contacting something with the wiping tool
+    "wipe_contact_reward": 0.1,                    # reward for contacting something with the wiping tool
     "unit_wiped_reward": 50.0,                      # reward per peg wiped
     "ee_accel_penalty": 0,                          # penalty for large end-effector accelerations 
     "excess_force_penalty_mul": 0.01,               # penalty for each step that the force is over the safety threshold
@@ -384,13 +384,6 @@ class Wipe(RobotEnv):
             # Normal of the plane defined by v1 and v2
             n = np.cross(v1, v2)
             n /= np.linalg.norm(n)
-
-            # Penalize not being on the table
-            wiper_pos = (corner1_pos + corner2_pos + corner3_pos + corner4_pos) / 4
-            if wiper_pos[2] > 1.05:
-                reward -= 10.0 * (wiper_pos[2] - 1.05)
-            else:
-                reward += 0.1
 
             def isLeft(P0, P1, P2):
                 return ((P1[0] - P0[0]) * (P2[1] - P0[1]) - (P2[0] - P0[0]) * (P1[1] - P0[1]))
