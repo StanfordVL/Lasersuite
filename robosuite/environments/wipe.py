@@ -387,7 +387,6 @@ class Wipe(RobotEnv):
 
             # Penalize not being on the table
             wiper_pos = (corner1_pos + corner2_pos + corner3_pos + corner4_pos) / 4
-            print(wiper_pos[2])
             if wiper_pos[2] > 1.05:
                 reward -= 10.0 * (wiper_pos[2] - 1.05)
             else:
