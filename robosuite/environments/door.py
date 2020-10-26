@@ -239,14 +239,14 @@ class Door(RobotEnv):
         return self.n_split_x * self.n_split_y
 
     def compute_bounds(self, bounds_sel):
-        x_i = bounds_sel % self.n_split_y
-        y_i = (bounds_sel - x_i) / self.n_split_x
-        assert abs(y_i - int(y_i)) < 1e-10
-        y_i = int(y_i)
+        assert self.n_split_x == 2 and self.n_split_y  == 1
+        bounds_sel_to_idx = {0: [0, 0], 1: [1, 0]}
+        (x_i, y_i) = bounds_sel_to_idx[bounds_sel]
         delta_x = self.x_line_bounds[x_i + 1] - self.x_line_bounds[x_i]
         delta_y = self.y_line_bounds[y_i + 1] - self.y_line_bounds[y_i]
-        x_bounds = (self.x_line_bounds[x_i]+delta_x*self.bounds_cov_frac/2, self.x_line_bounds[x_i + 1]-delta_x*self.bounds_cov_frac/2)
-        y_bounds = (self.y_line_bounds[y_i]+delta_y*self.bounds_cov_frac/2, self.y_line_bounds[y_i + 1]-delta_y*self.bounds_cov_frac/2)
+        factor = (1-self.bounds_cov_frac)/2
+        x_bounds = (self.x_line_bounds[x_i]+delta_x*factor, self.x_line_bounds[x_i + 1]-delta_x*factor)
+        y_bounds = (self.y_line_bounds[y_i]+delta_y*factor, self.y_line_bounds[y_i + 1]-delta_y*factor)
         return x_bounds, y_bounds
 
     def reward(self, action=None):
