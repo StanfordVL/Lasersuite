@@ -13,7 +13,7 @@ import multiprocessing
 DEFAULT_WIPE_CONFIG = {
     # settings for reward
     "arm_limit_collision_penalty": -10.0,           # penalty for reaching joint limit or arm collision (except the wiping tool) with the table
-    "wipe_contact_reward": 0.1,                    # reward for contacting something with the wiping tool
+    "wipe_contact_reward": 0.05,                    # reward for contacting something with the wiping tool
     "unit_wiped_reward": 50.0,                      # reward per peg wiped
     "ee_accel_penalty": 0,                          # penalty for large end-effector accelerations 
     "excess_force_penalty_mul": 0.01,               # penalty for each step that the force is over the safety threshold
@@ -22,8 +22,8 @@ DEFAULT_WIPE_CONFIG = {
 
     # settings for table top
     "table_full_size": [0.6, 0.8, 0.05],            # Size of tabletop
-    "table_offset": [0, 0, 1.05],                    # Offset of table (z dimension defines max height of table)
-    "table_friction": [0.00001, 0.005, 0.0001],     # Friction parameters for the table
+    "table_offset": [0, 0, 1.05],                   # Offset of table (z dimension defines max height of table)
+    "table_friction": [0.00001, 0.005, 0.0001],     # Friction parameters for the table (sliding, torsional, rolling)
     "table_friction_std": 0,                        # Standard deviation to sample different friction parameters for the table each episode
     "table_height": 0.0,                            # Additional height of the table over the default location
     "table_height_std": 0.0,                        # Standard deviation to sample different heigths of the table each episode
