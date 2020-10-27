@@ -45,6 +45,7 @@ class PandaDoor(PandaRobotArmEnv):
             use_default_controller_config=True,
             controller_config_file=None,
             controller='joint_velocity',
+            bounds_sel=None,
             **kwargs
     ):
         """
@@ -121,6 +122,8 @@ class PandaDoor(PandaRobotArmEnv):
             **kwargs includes additional params that may be specified and will override values found in
             the configuration files
         """
+        
+        self.bounds_sel = bounds_sel
 
         # Load the parameter configuration files
         if use_default_controller_config == True:
@@ -260,6 +263,20 @@ class PandaDoor(PandaRobotArmEnv):
             self.model.set_door_friction(friction)
 
         self.model.place_objects(randomize=self.placement_initializer)
+
+    meta_learning_task_mapping = [
+        {'hinge_goal': 1.04},
+        {'hinge_goal': 0.52},
+    ]
+
+    def set_task(self, task_idx):
+        self.bounds_sel = task_idx
+        for k, v in self.meta_learning_task_mapping[self.bounds_sel].items():
+            self.__setattr__(k, v)
+
+    def n_tasks(self):
+        return
+
 
     def _get_reference(self):
         super()._get_reference()
