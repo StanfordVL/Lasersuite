@@ -263,7 +263,7 @@ class PandaRobotArmEnv(MujocoEnv):
 
     ########################## DATA LOGGING #################
 
-    def _load_controller(self, controller_type, controller_file, kwargs):
+    def _load_controller(self, controller_type, controller_file, kwargs={}):
         """
         Loads controller to be used for dynamic trajectories
 
