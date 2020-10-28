@@ -28,9 +28,9 @@ DEFAULT_WIPE_CONFIG = {
     "table_height": 0.0,                            # Additional height of the table over the default location
     "table_height_std": 0.0,                        # Standard deviation to sample different heigths of the table each episode
     "line_width": 0.04,                             # Width of the line to wipe (diameter of the pegs)
-    "two_clusters": True,                           # if the dirt to wipe is one continuous line or two
+    "two_clusters": False,                           # if the dirt to wipe is one continuous line or two
     "coverage_factor": 0.6,                         # how much of the table surface we cover
-    "num_sensors": 2,                               # How many particles of dirt to generate in the environment
+    "num_sensors": 20,                               # How many particles of dirt to generate in the environment
 
     # settings for thresholds
     "contact_threshold": 3,                         # Minimum eef force to qualify as contact [N]
