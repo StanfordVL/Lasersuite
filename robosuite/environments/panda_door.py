@@ -123,8 +123,6 @@ class PandaDoor(PandaRobotArmEnv):
             the configuration files
         """
         
-        self.bounds_sel = bounds_sel
-
         # Load the parameter configuration files
         if use_default_controller_config == True:
             controller_filepath = os.path.join(os.path.dirname(__file__), '..',
@@ -230,6 +228,12 @@ class PandaDoor(PandaRobotArmEnv):
 
             self.file_logging.create_dataset('done', (self.data_count, 1), maxshape=(None, 1))
 
+        self.bounds_sel = bounds_sel
+        logger.warning(f"Bounds sel {self.bounds_sel}")
+        if bounds_sel is not None:
+            logger.warning(f"Bounds sel {self.bounds_sel}")
+            self.set_task(self.bounds_sel)
+
     def _load_model(self):
         super()._load_model()
         self.mujoco_robot.set_base_xpos([0, 0, 0])
@@ -267,6 +271,7 @@ class PandaDoor(PandaRobotArmEnv):
     meta_learning_task_mapping = [
         {'hinge_goal': 1.04},
         {'hinge_goal': 0.52},
+        {'hinge_goal': 0.52, 'door_friction_min': 0, 'door_friction_max': 0, 'change_door_friction': True},
     ]
 
     def set_task(self, task_idx):

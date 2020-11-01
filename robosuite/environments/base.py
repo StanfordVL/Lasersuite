@@ -224,7 +224,7 @@ class MujocoEnv(metaclass=EnvMeta):
         """Reward should be a function of state and action."""
         return 0
 
-    def render(self):
+    def render(self, **kwargs):
         """
         Renders to an on-screen window.
         """
