@@ -194,6 +194,7 @@ class PandaDoor(PandaRobotArmEnv):
         self.placement_initializer = placement_initializer
         self.table_full_size = task['table_full_size']
         self.table_origin = [0.50 + self.table_full_size[0] / 2, 0, 0]
+        self.eef_pos = [0, 0, 0]
 
         super(PandaDoor, self).__init__(
             logging_filename=task['logging_filename'],
@@ -303,6 +304,7 @@ class PandaDoor(PandaRobotArmEnv):
         reward = 0
         grip_id = self.sim.model.site_name2id("grip_site")
         eef_position = self.sim.data.site_xpos[grip_id]
+        self.eef_pos = eef_position
 
         force_sensor_id = self.sim.model.sensor_name2id("force_ee")
         self.force_ee = self.sim.data.sensordata[force_sensor_id * 3: force_sensor_id * 3 + 3]
