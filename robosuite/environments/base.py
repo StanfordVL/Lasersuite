@@ -458,6 +458,7 @@ class MujocoEnv(metaclass=EnvMeta):
         """
         # if there is an active viewer window, destroy it
         if self.viewer is not None:
+            #self.viewer.finish()  # ?
             self.viewer.close()  # change this to viewer.finish()?
             self.viewer = None
 

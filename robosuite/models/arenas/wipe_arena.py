@@ -33,6 +33,7 @@ class WipeArena(TableArena):
         bounds_sel=None,
         n_split_x=1,
         n_split_y=1,
+        deterministic_start=True,
     ):
         # Tactile table-specific features
         self.table_friction_std = table_friction_std
@@ -51,6 +52,7 @@ class WipeArena(TableArena):
         self.n_split_y = n_split_y
         self.x_line_bounds = None
         self.y_line_bounds = None
+        self.deterministic_start = deterministic_start
 
         # run superclass init
         super().__init__(
@@ -154,17 +156,22 @@ class WipeArena(TableArena):
         Returns:
             np.array: the (x,y) value of the newly sampled dirt starting location
         """
+
         # First define the random direction that we will start at
         self.direction = np.random.uniform(-np.pi, np.pi)
 
+        # Deterministic position of the first sensor
+        if self.deterministic_start:
+            return np.array([0.150, 0.200])
+
         if self.x_line_bounds is None or self.y_line_bounds is None:
             self.x_line_bounds = np.linspace(
-                -self.table_half_size[0]*self.coverage_factor+self.line_width/2,
+                -self.table_half_size[0]*self.coverage_factor+self.line_width / 2,
                 self.table_half_size[0]*self.coverage_factor-self.line_width / 2,
                 self.n_split_x+1
             )
             self.y_line_bounds = np.linspace(
-                -self.table_half_size[1]*self.coverage_factor+self.line_width/2,
+                -self.table_half_size[1]*self.coverage_factor+self.line_width / 2,
                 self.table_half_size[1]*self.coverage_factor-self.line_width / 2,
                 self.n_split_y+1
             )
