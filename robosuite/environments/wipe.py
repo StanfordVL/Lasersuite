@@ -22,7 +22,7 @@ DEFAULT_WIPE_CONFIG = {
 
     # settings for table top
     "table_full_size": [0.6, 0.8, 0.05],            # Size of tabletop
-    "table_offset": [0, 0, 0.8],                   # Offset of table (z dimension defines max height of table)
+    "table_offset": [0, 0, 1.05],                   # Offset of table (z dimension defines max height of table)
     "table_friction": [0.00001, 0.005, 0.0001],     # Friction parameters for the table (sliding, torsional, rolling)
     "table_friction_std": 0,                        # Standard deviation to sample different friction parameters for the table each episode
     "table_height": 0.0,                            # Additional height of the table over the default location
@@ -227,7 +227,7 @@ class Wipe(RobotEnv):
         self.two_clusters = self.task_config['two_clusters']
         self.coverage_factor = self.task_config['coverage_factor']
         self.num_sensors = self.task_config['num_sensors']
-        self.deterministic_start = deterministic_start #deterministic starting position of sensor
+        #self.deterministic_start = deterministic_start #deterministic starting position of sensor
 
         # settings for thresholds
         self.contact_threshold = self.task_config['contact_threshold']
@@ -537,7 +537,7 @@ class Wipe(RobotEnv):
             bounds_sel=self.bounds_sel,
             n_split_x=self.n_split_x,
             n_split_y=self.n_split_y,
-            deterministic_start=self.deterministic_start
+            #deterministic_start=self.deterministic_start
         )
         if self.use_indicator_object:
             self.mujoco_arena.add_pos_indicator()
