@@ -176,6 +176,7 @@ class WipeArena(TableArena):
                 self.n_split_y+1
             )
 
+        '''
         if self.bounds_sel is not None:
             x_bounds, y_bounds = self.compute_bounds(self.bounds_sel)
             return np.array(
@@ -185,16 +186,17 @@ class WipeArena(TableArena):
                 )
             )
         else:
-            return np.array(
-                (
-                    np.random.uniform(
+        '''
+        return np.array(
+            (
+                np.random.uniform(
                         -self.table_half_size[0] * self.coverage_factor + self.line_width / 2,
                         self.table_half_size[0] * self.coverage_factor - self.line_width / 2),
-                    np.random.uniform(
+                np.random.uniform(
                         -self.table_half_size[1] * self.coverage_factor + self.line_width / 2,
                         self.table_half_size[1] * self.coverage_factor - self.line_width / 2)
-                )
             )
+        )
 
     def compute_bounds(self, bounds_sel):
         x_i = bounds_sel % self.n_split_y

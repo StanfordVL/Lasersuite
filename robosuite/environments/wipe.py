@@ -184,7 +184,7 @@ class Wipe(RobotEnv):
         bounds_sel=None,
         n_split_x=1,
         n_split_y=1,
-        deterministic_start=True,
+        #deterministic_start=True,
     ):
         # First, verify that only one robot is being inputted
         self._check_robot_configuration(robots)
@@ -260,6 +260,8 @@ class Wipe(RobotEnv):
         self.bounds_sel = bounds_sel
         self.n_split_x = n_split_x
         self.n_split_y = n_split_y
+        if self.bounds_sel is not None:
+            self.set_task(self.bounds_sel)
 
         # whether to include and use ground-truth object states
         self.use_object_obs = use_object_obs
@@ -297,9 +299,15 @@ class Wipe(RobotEnv):
             camera_depths=camera_depths,
         )
 
+    task_mapping = [
+        {"table_friction": [0.00001, 0.005, 0.0001]},
+        {"table_friction": [0.0001,  0.005, 0.0001]}
+    ]
+
     def set_task(self, task_idx):
         self.bounds_sel = task_idx
-        self.mujoco_arena.bounds_sel = task_idx
+        for k, v in self.task_mapping[self.bounds_sel].items():
+            self.__setattr__(k, v)
 
     def n_tasks(self):
         return self.n_split_x * self.n_split_y
@@ -525,6 +533,7 @@ class Wipe(RobotEnv):
         # Delta goes down
         delta_height = min(0, np.random.normal(self.table_height, self.table_height_std))
 
+        print(self.table_friction)
         self.mujoco_arena = WipeArena(
             table_full_size=self.table_full_size,
             table_friction=self.table_friction,
