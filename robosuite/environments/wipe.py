@@ -533,7 +533,6 @@ class Wipe(RobotEnv):
         # Delta goes down
         delta_height = min(0, np.random.normal(self.table_height, self.table_height_std))
 
-        print(self.table_friction)
         self.mujoco_arena = WipeArena(
             table_full_size=self.table_full_size,
             table_friction=self.table_friction,
