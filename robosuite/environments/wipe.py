@@ -30,7 +30,7 @@ DEFAULT_WIPE_CONFIG = {
     "line_width": 0.04,                             # Width of the line to wipe (diameter of the pegs)
     "two_clusters": False,                           # if the dirt to wipe is one continuous line or two
     "coverage_factor": 0.6,                         # how much of the table surface we cover
-    "num_sensors": 20,                               # How many particles of dirt to generate in the environment
+    "num_sensors": 50,                               # How many particles of dirt to generate in the environment
 
     # settings for thresholds
     "contact_threshold": 3,                         # Minimum eef force to qualify as contact [N]
