@@ -22,7 +22,7 @@ DEFAULT_WIPE_CONFIG = {
 
     # settings for table top
     "table_full_size": [0.6, 0.8, 0.05],            # Size of tabletop
-    "table_offset": [0, 0, 0.9],                    # Offset of table (z dimension defines max height of table)
+    "table_offset": [0, 0, 0.95],                    # Offset of table (z dimension defines max height of table)
     "table_friction": [0.00001, 0.005, 0.0001],     # Friction parameters for the table (sliding, torsional, rolling)
     "table_friction_std": 0,                        # Standard deviation to sample different friction parameters for the table each episode
     "table_height": 0.0,                            # Additional height of the table over the default location
