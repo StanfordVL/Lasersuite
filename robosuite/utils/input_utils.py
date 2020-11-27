@@ -2,7 +2,7 @@
 Utility functions for grabbing user inputs
 """
 
-from ... import robosuite as suite
+import robosuite as suite
 from ..models.robots import *
 from ..controllers import *
 from ..robots import *

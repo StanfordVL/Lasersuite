@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 import os
 import numpy as np
 
-from ... import robosuite
+import robosuite
 
 RED = [1, 0, 0, 1]
 GREEN = [0, 1, 0, 1]

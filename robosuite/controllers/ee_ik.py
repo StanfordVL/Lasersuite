@@ -10,7 +10,7 @@ except ImportError:
 import os
 import numpy as np
 from os.path import join as pjoin
-from ... import robosuite
+import robosuite
 from ..utils.control_utils import *
 from ..utils import transform_utils as T
 from .joint_vel import JointVelocityController

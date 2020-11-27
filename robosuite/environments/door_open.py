@@ -43,6 +43,7 @@ class DoorOpen(RobotEnv):
 		control_freq=25,
 		horizon=250,
 		ignore_done=False,
+		end_on_limits=False,
 		camera_names="agentview",
 		camera_heights=256,
 		camera_widths=256,
@@ -79,6 +80,7 @@ class DoorOpen(RobotEnv):
 			camera_widths (int or list of int): width of camera frame. Should either be single int if same width is to be used for all cameras' frames or else it should be a list of the same length as "camera names" param.
 			camera_depths (bool or list of bool): True if rendering RGB-D, and RGB otherwise. Should either be single bool if same depth setting is to be used for all cameras or else it should be a list of the same length as "camera names" param.
 		"""
+		self.end_on_limits = end_on_limits
 		# First, verify that only one robot is being inputted
 		self.region_height = height
 		self._check_robot_configuration(robots)
@@ -307,14 +309,16 @@ class DoorOpen(RobotEnv):
 
 	def done(self, debug=False):
 		terminated = False
-		if self._check_q_limits():
-			if debug: print(40 * '-' + " JOINT LIMIT " + 40 * '-')
-			terminated = True
+		if self.end_on_limits:
+			if self._check_q_limits():
+				if debug: print(40 * '-' + " JOINT LIMIT " + 40 * '-')
+				terminated = True
 
-		# Prematurely terminate if contacting the table with the arm
-		if self._check_arm_contact():
-			if debug: print(40 * '-' + " COLLIDED " + 40 * '-')
-			terminated = True
+			# Prematurely terminate if contacting the table with the arm
+			if self._check_arm_contact():
+				if debug: print(40 * '-' + " COLLIDED " + 40 * '-')
+				terminated = True
+		terminated = terminated or self.timestep > self.horizon
 		return terminated
 
 	def _visualization(self):
