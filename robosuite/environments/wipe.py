@@ -41,7 +41,7 @@ DEFAULT_WIPE_CONFIG = {
     "print_results": False,                         # Whether to print results or not
     "get_info": False,                              # Whether to grab info after each env step if not
     "use_robot_obs": True,                          # if we use robot observations (proprioception) as input to the policy
-    "early_terminations": False,                    # Whether we allow for early terminations or not
+    "early_terminations": True,                    # Whether we allow for early terminations or not
 }
 
 
