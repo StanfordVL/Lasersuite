@@ -211,7 +211,7 @@ class Wipe(RobotEnv):
         # Final reward computation
         # So that is better to finish that to stay touching the table for 100 steps
         # The 0.5 comes from continuous_distance_reward at 0. If something changes, this may change as well
-        self.task_complete_reward = 50 * (self.wipe_contact_reward + 0.5)
+        self.task_complete_reward = 100 * (self.wipe_contact_reward + 0.5)
         # Verify that the distance multiplier is not greater than the task complete reward
         assert self.task_complete_reward > self.distance_multiplier,\
             "Distance multiplier cannot be greater than task complete reward!"
@@ -673,7 +673,7 @@ class Wipe(RobotEnv):
         # Prematurely terminate if task is success
         if self._check_success():
             if self.print_results:
-                print(40 * '+' + " FINISHED WIPING " + 40 * '+')
+               print(40 * '+' + " FINISHED WIPING " + 40 * '+')
             terminated = True
 
         # Prematurely terminate if contacting the table with the arm
@@ -707,9 +707,14 @@ class Wipe(RobotEnv):
             info['percent_viapoints_'] = len(self.wiped_sensors) / len(self.model.arena.sensor_names)
             info['f_excess'] = self.f_excess
 
+        # if self._check_success():
+        #     print("Reward:", reward)
+
         # allow episode to finish early if allowed
         if self.early_terminations:
             done = done or self._check_terminated()
+            # if done:
+            #    print("Done:", done, "\tReward:", reward)
 
         return reward, done, info
 

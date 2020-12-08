@@ -162,7 +162,7 @@ class WipeArena(TableArena):
 
         # Deterministic position of the first sensor
         if self.deterministic_start:
-            return np.array([0.150, 0.200])
+            return np.array([0.10, 0.15])
 
         if self.x_line_bounds is None or self.y_line_bounds is None:
             self.x_line_bounds = np.linspace(
