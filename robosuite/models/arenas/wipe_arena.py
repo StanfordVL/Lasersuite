@@ -3,6 +3,7 @@ from robosuite.models.arenas import TableArena
 from robosuite.utils.mjcf_utils import array_to_string, CustomMaterial
 from robosuite.models.objects import CylinderObject
 
+start_pos = [0.05, 0.10]
 
 class WipeArena(TableArena):
     """
@@ -162,7 +163,7 @@ class WipeArena(TableArena):
 
         # Deterministic position of the first sensor
         if self.deterministic_start:
-            return np.array([0.10, 0.15])
+            return np.array(start_pos)
 
         if self.x_line_bounds is None or self.y_line_bounds is None:
             self.x_line_bounds = np.linspace(
