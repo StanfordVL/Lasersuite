@@ -30,7 +30,7 @@ DEFAULT_WIPE_CONFIG = {
     "line_width": 0.04,                             # Width of the line to wipe (diameter of the pegs)
     "two_clusters": False,                           # if the dirt to wipe is one continuous line or two
     "coverage_factor": 0.6,                         # how much of the table surface we cover
-    "num_sensors": 20,                               # How many particles of dirt to generate in the environment
+    "num_sensors": 50,                               # How many particles of dirt to generate in the environment
 
     # settings for thresholds
     "contact_threshold": 3,                         # Minimum eef force to qualify as contact [N]
@@ -211,7 +211,7 @@ class Wipe(RobotEnv):
         # Final reward computation
         # So that is better to finish that to stay touching the table for 100 steps
         # The 0.5 comes from continuous_distance_reward at 0. If something changes, this may change as well
-        self.task_complete_reward = 100. # 50 * (self.wipe_contact_reward + 0.5)
+        self.task_complete_reward = 1000. # 50 * (self.wipe_contact_reward + 0.5)
         # Verify that the distance multiplier is not greater than the task complete reward
         assert self.task_complete_reward > self.distance_multiplier,\
             "Distance multiplier cannot be greater than task complete reward!"
@@ -620,6 +620,7 @@ class Wipe(RobotEnv):
 
         # object information in the observation
         if self.use_object_obs:
+            self.eef_pos = di['robot0_eef_pos']
             gripper_site_pos = np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id])
             # position of objects to wipe
             acc = np.array([])
