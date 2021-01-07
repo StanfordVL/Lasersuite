@@ -211,7 +211,7 @@ class Wipe(RobotEnv):
         # Final reward computation
         # So that is better to finish that to stay touching the table for 100 steps
         # The 0.5 comes from continuous_distance_reward at 0. If something changes, this may change as well
-        self.task_complete_reward = 1000. # 50 * (self.wipe_contact_reward + 0.5)
+        self.task_complete_reward = 100. # 50 * (self.wipe_contact_reward + 0.5)
         # Verify that the distance multiplier is not greater than the task complete reward
         assert self.task_complete_reward > self.distance_multiplier,\
             "Distance multiplier cannot be greater than task complete reward!"
@@ -281,8 +281,8 @@ class Wipe(RobotEnv):
             controller_configs=controller_configs,
             gripper_types=gripper_types,
             gripper_visualizations=gripper_visualizations,
-            #initialization_noise=initialization_noise,
-            initialization_noise={'magnitude': 0.25, 'type': 'uniform'},
+            initialization_noise=initialization_noise,
+            # initialization_noise={'magnitude': 0.25, 'type': 'uniform'},
             use_camera_obs=use_camera_obs,
             use_indicator_object=use_indicator_object,
             has_renderer=has_renderer,
