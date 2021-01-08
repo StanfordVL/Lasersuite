@@ -394,6 +394,16 @@ class Push(RobotEnv):
         """
         di = super()._get_observation()
 
+        if self.use_camera_obs:
+            camera_obs = self.sim.render(camera_name=self.camera_names[0],
+                                         width=self.camera_widths[0],
+                                         height=self.camera_heights[0],
+                                         depth=self.camera_depths[0])
+            if self.camera_depths[0]:
+                di[f'{self.render_camera}_image'], di['depth'] = camera_obs
+            else:
+                di[f'{self.render_camera}_image'] = camera_obs
+
         # low-level object information
         if self.use_object_obs:
             # Get robot prefix
