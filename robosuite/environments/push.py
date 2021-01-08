@@ -217,7 +217,7 @@ class Push(RobotEnv):
 
             - Reaching: in [0, 1], to encourage the arm to reach the cube
             - Contact: in {0, 0.25}, non-zero if arm is touching the cube
-            - Pushing: in [0, 1], to encourage the arm to push the cube to the target
+            - Pushing: in {0, 1}, non-zero if arm has pushed the cube to the target
 
         The sparse reward only consists a pushing component in {0, 1}.
 
@@ -263,10 +263,10 @@ class Push(RobotEnv):
                 reward += 0.25
 
             # pushing reward
-            goal_pos = self.sim.data.site_xpos[self.sim.model.site_name2id('target')]
-            dist = np.linalg.norm(cube_pos - goal_pos)
-            pushing_reward = 1 - np.tanh(10.0 * dist)
-            reward += pushing_reward
+            # goal_pos = self.sim.data.site_xpos[self.sim.model.site_name2id('target')]
+            # dist = np.linalg.norm(cube_pos - goal_pos)
+            # pushing_reward = 1 - np.tanh(10.0 * dist)
+            # reward += pushing_reward
 
         # Scale reward if requested
         if self.reward_scale is not None:
